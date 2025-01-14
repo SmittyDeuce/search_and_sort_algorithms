@@ -1,3 +1,6 @@
+from flask import Flask, request, jsonify
+import requests
+import threading
 # Video Search Application with Binary Search
 # Objective: The objective of this assignment is to develop a
 # video search application that utilizes the binary search
@@ -18,9 +21,10 @@ video_titles = [
     "Digital Photography Essentials",
     "Financial Planning for Beginners",
     "Nature's Wonders: National Geographic",
-    "Artificial Intelligence Revolution",
-    "Travel Diaries: Discovering Europe"
-]
+    "Artificial Intelligence Revolution",]
+
+# Sorted list of video titles for binary search
+sorted_video = sorted(video_titles)
 
 # You can use this list video_titles in your Python
 # code for further processing or manipulation.
@@ -32,21 +36,31 @@ video_titles = [
 
 
 
+# Task 1: Binary search implementation
 def binary_search(arr, target):
-    low = 0
-    high = len(arr) -1
+    """
+    Perform binary search on a sorted list.
 
+    Parameters:
+    - arr (list): Sorted list to search in.
+    - target (str): Title to search for.
+
+    Returns:
+    - int: Index of the found title, or -1 if not found.
+    """
+    low, high = 0, len(arr) - 1
     while low <= high:
         mid = (low + high) // 2
-        if arr[mid] ==  target:
-            return f"Title found at index {mid}"
-        
+        if arr[mid].lower() == target.lower():
+            return mid
+        elif arr[mid].lower() < target.lower():
+            low = mid + 1
         else:
             high = mid - 1
+    return -1
 
-    return "Title is not inside data base"
 
-print(binary_search(video_titles, "The Art of Coding"))
+# print(binary_search(sorted_video, "The Art of Coding"))
 
 # Task 2:
 
@@ -56,7 +70,45 @@ print(binary_search(video_titles, "The Art of Coding"))
 # This API should accept a search query as input
 # and return the matching videos, if any.
 
+app = Flask(__name__)
 
+# Task 2: Flask REST API
+app = Flask(__name__)
+
+@app.route("/titles", methods=["POST"])
+def add_titles():
+    """
+    Add new titles to the video list.
+    Expects a JSON payload with a "video_titles" key containing a list of titles.
+    """
+    global video_titles, sorted_video
+    data = request.json
+    if not data or "video_titles" not in data or not isinstance(data["video_titles"], list):
+        return jsonify({"error": "Invalid data format"}), 400
+
+    video_titles += data["video_titles"]
+    sorted_video = sorted(video_titles)
+    return jsonify({"message": "Titles added successfully!"}), 201
+
+@app.route("/titles/search", methods=["GET"])
+def search_title():
+    """
+    Search for a video title using binary search.
+    Accepts a "query" parameter in the request URL.
+    """
+    query = request.args.get("query", "").strip()
+    if not query:
+        return jsonify({"error": "No query provided"}), 400
+
+    # Perform binary search
+    index = binary_search(sorted_video, query)
+    if index != -1:
+        return jsonify({"found": True, "index": index, "title": sorted_video[index]}), 200
+    return jsonify({"found": False, "message": "Title not found"}), 404
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
 
 # Task 3:
 
