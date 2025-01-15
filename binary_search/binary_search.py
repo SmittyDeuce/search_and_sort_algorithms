@@ -1,6 +1,4 @@
 from flask import Flask, request, jsonify
-import requests
-import threading
 # Video Search Application with Binary Search
 # Objective: The objective of this assignment is to develop a
 # video search application that utilizes the binary search
@@ -70,7 +68,6 @@ def binary_search(arr, target):
 # This API should accept a search query as input
 # and return the matching videos, if any.
 
-app = Flask(__name__)
 
 # Task 2: Flask REST API
 app = Flask(__name__)

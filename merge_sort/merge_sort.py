@@ -1,4 +1,4 @@
-# from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify
 
 
 # Video Sorting with Merge Sort
@@ -90,15 +90,39 @@ def merge_sort(arr):
         The result will be a fully sorted array.
         '''
 
-        
+
 # Task 2:
 # Develop another REST API endpoint using Flask that allows
 # users to fetch a list of videos sorting alphabetically by
 # their titles using the merge sort developed in Task 1.
 
+app = Flask(__name__)
+
+@app.route("/addtitles", methods=["POST"])
+def add_titles():
+    global video_titles
+    data = request.json
+
+    if not data or "video_titles" not in data or not isinstance(data["video_titles"], list):
+        return jsonify({"error:" "invalid format"}), 400
+    
+    video_titles += [title for title in data["video_titles"] if title not in video_titles]
+    return jsonify({"message": "Titles added successfully"}), 201
 
 
+@app.route("/merge", methods=["GET"])
+def get_titles():
 
+   if not video_titles:
+       return jsonify({"error": "no titles"}), 400
+   
+   merge_sort(video_titles)
+   return jsonify({"Sorted": video_titles})
+    
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
 
 # Task 3:
 # Test the video sorting functionality using Postman or a similar tool. Send requests to the API endpoint created in Task 2 and verify its correctness and efficiency. Ensure that the API returns the expected results.
